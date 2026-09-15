@@ -1,0 +1,39 @@
+name: Deploy portfolio to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download site bundle
+        run: |
+          curl -L --fail --retry 3 \
+            "https://github.com/csz20056539987-art/chen-shize-portfolio-vivid/releases/download/v1.0/portfolio-vivid-site.zip" \
+            -o site.zip
+          mkdir -p _site
+          unzip -q site.zip -d _site
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
